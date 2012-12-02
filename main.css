@@ -1,0 +1,68 @@
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+html
+{
+    background-image: url(Paper01.jpg);
+    font-family: "adobe-caslon-pro-1","adobe-caslon-pro-2",Georgia,serif;
+    color: #555555;
+}
+
+body
+{
+	overflow: hidden;
+}
+
+#main-wrapper
+{
+    width: 80%;
+    max-width: 500px;
+    margin: 0px auto 50px auto;
+}
+
+h1
+{
+    font-size: 50px;
+    letter-spacing: -2px;
+    padding-top: 50px;
+    text-shadow: 0 -1px 2px #cccccc;
+    text-transform: uppercase;
+    margin-bottom: 50px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h1.title
+{
+	display: none;
+	margin-top: 50px;
+}
+
+ul
+{
+    display: block;
+    text-align: left;
+    list-style: none;
+    margin: 20px 0px 40px 0px;
+}
+
+ul li
+{
+    font-family: "Helvetica Neue";
+    margin-bottom: 10px;
+}
+
+a, a:visited a:active
+{
+    color: gray;
+    text-decoration: none;
+}
+
+a:hover
+{
+    text-decoration: underline;
+}
