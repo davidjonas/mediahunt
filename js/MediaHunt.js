@@ -1,10 +1,20 @@
 var MediaHunt = {};
 
+//Configure here!
+
+MediaHunt.threshold = 25;
+MediaHunt.CartoDbUserName = "davidjonas";
+MediaHunt.CartoDbTableName = "media_points";
+
+//-------End of configuration---------
+
+
 MediaHunt.lat = 0;
 MediaHunt.lon = 0;
 MediaHunt.gotPosition = false;
 MediaHunt.points = [];
 MediaHunt.distances = [];
+MediaHunt.playing = false;
 
 MediaHunt.init = function ()
 {
@@ -37,8 +47,8 @@ MediaHunt.startGame = function ()
 
 MediaHunt.getPointsFromCartoDb = function ()
 {
-    var sql = "SELECT name, description, ST_AsGeoJSON(the_geom) as location FROM media_points";
-    $.getJSON("http://davidjonas.cartodb.com/api/v2/sql?q=" + sql, function(data){
+    var sql = "SELECT name, description, ST_AsGeoJSON(the_geom) as location FROM "+MediaHunt.CartoDbTableName;
+    $.getJSON("http://"+MediaHunt.CartoDbUserName+".cartodb.com/api/v2/sql?q=" + sql, function(data){
 		var rows = data["rows"];
                 $.each(rows, function (index, row) {
                         MediaHunt.points.push(row);
@@ -48,13 +58,8 @@ MediaHunt.getPointsFromCartoDb = function ()
 
 MediaHunt.showMap = function ()
 {
-    //var map = $("<iframe id='map' src='https://davidjonas.cartodb.com/tables/media_points/embed_map'></iframe>").css({'width':'100%', 'height':$(document).height()});
-    //$('body').append(map);
-
-     
-    
-    var user  = "davidjonas";
-    var table = "media_points";
+    var user  = MediaHunt.CartoDbUserName;
+    var table = MediaHunt.CartoDbTableName;
     var lat   = MediaHunt.lat;
     var lng   = MediaHunt.lon;
     var zoom  = 18;
@@ -135,11 +140,11 @@ MediaHunt.recalculateDistances = function ()
 {
     //var sql = "SELECT name, description, ST_AsGeoJSON(the_geom) as location FROM media_points WHERE ST_distance_sphere(the_geom, ST_Point("+MediaHunt.lat+", "+MediaHunt.lon+")) < 20 LIMIT 1";
     
-    var sql = "SELECT name, description, ST_AsGeoJSON(the_geom) as location FROM media_points WHERE ST_Intersects( the_geom, ST_Buffer( ST_SetSRID('POINT(" + MediaHunt.lon + " " + MediaHunt.lat + ")'::geometry , 4326),"+MediaHunt.getRadDeg(20)+"))";
+    var sql = "SELECT name, description, ST_AsGeoJSON(the_geom) as location FROM "+MediaHunt.CartoDbTableName+" WHERE ST_Intersects( the_geom, ST_Buffer( ST_SetSRID('POINT(" + MediaHunt.lon + " " + MediaHunt.lat + ")'::geometry , 4326),"+MediaHunt.getRadDeg(MediaHunt.threshold)+"))";
     
-    $.getJSON("http://davidjonas.cartodb.com/api/v2/sql?q=" + sql, function (data)
+    $.getJSON("http://"+MediaHunt.CartoDbUserName+".cartodb.com/api/v2/sql?q=" + sql, function (data)
 	      {
-		    if (data.rows.length == 1)
+		    if (data.rows.length != 0)
 		    {
 			MediaHunt.playMedia(data.rows[0])
 		    }
@@ -148,7 +153,24 @@ MediaHunt.recalculateDistances = function ()
 
 MediaHunt.playMedia = function (point)
 {
-    alert("Great!!! You found "+ point.name);
+    //alert("Great!!! You found "+ point.name);
+    if (!MediaHunt.playing)
+    {
+	MediaHunt.playing = true;
+	var container = $('<div id="media" style="z-index:999;"></div>');
+	$('body').prepend(container);
+	var closer = $('<div id="close">Close</div>')
+	$(closer).click(MediaHunt.stopMedia);
+	var emb = $('<iframe style="position: absolute; top:10%; left:10%;" width="80%" height="80%" src="http://www.youtube.com/embed/'+point.description+'?autoplay=1" frameborder="0" allowfullscreen></iframe>');
+	$(container).append(closer);
+	$(container).append(emb);
+    }
+}
+
+MediaHunt.stopMedia = function ()
+{
+    $('#media').remove();
+    MediaHunt.playing = false;
 }
 
 MediaHunt.getRadDeg = function(dist)
